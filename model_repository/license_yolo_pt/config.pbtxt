@@ -1,0 +1,20 @@
+name: "license_yolo_pt"
+platform: "pytorch_libtorch"
+input [
+  {
+    name: "images__1"
+    data_type: TYPE_FP32
+    format: FORMAT_NHWC
+    dims: 640
+    dims: 640
+    dims: 3
+    reshape { shape: [ 1, 640, 640, 3 ] }
+  }
+]
+output [
+  {
+    name: "output__1"
+    data_type: TYPE_FP32
+    dims: [1,25200,6]
+  }
+]

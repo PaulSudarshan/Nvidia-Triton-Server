@@ -1,0 +1,89 @@
+aws ecr get-login-password \
+    --region us-east-1 | docker login \
+    --username AWS \
+    --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
+    
+CONTAINER_IMAGES="709825985650.dkr.ecr.us-east-1.amazonaws.com/nvidia/containers/nvidia/tritonserver:22.01-py3"    
+
+for i in $(echo $CONTAINER_IMAGES | sed "s/,/ /g"); do docker pull $i; done
+
+
+
+sudo chmod 666 /var/run/docker.sock
+
+
+sudo docker run --rm -p8000:8000 -p8001:8001 -p8002:8002 -v $PWD/model_repository:/models 709825985650.dkr.ecr.us-east-1.amazonaws.com/nvidia/containers/nvidia/tritonserver:22.01-py3 tritonserver --model-repository=/models
+
+curl localhost:8000/api/status/densenet_onnx
+
+
+aws ecr get-login-password \
+    --region us-east-1 | docker login \
+    --username AWS \
+    --password-stdin 709825985650.dkr.ecr.us-east-1.amazonaws.com
+    
+CONTAINER_IMAGES="709825985650.dkr.ecr.us-east-1.amazonaws.com/nvidia/containers/nvidia/tritonserver:22.01-py3-sdk"    
+
+for i in $(echo $CONTAINER_IMAGES | sed "s/,/ /g"); do docker pull $i; done
+
+
+
+sudo docker run -it --rm --net=host 709825985650.dkr.ecr.us-east-1.amazonaws.com/nvidia/containers/nvidia/tritonserver:22.01-py3-sdk
+
+
+python ./client/src/python/examples/image_client.py -m densenet_onnx -s INCEPTION -c 3 -b 3 images/mug.jpg
+python ./client/src/python/examples/image_client.py -m inception_graphdef -s INCEPTION -c 3 -b 3 images
+
+python ./client/src/python/examples/resnet-infer.py -m resnet -s INCEPTION -c 2048 images/mug.jpg
+
+
+Server Health Check
+curl -v localhost:8000/v2/health/live
+curl -v localhost:8000/v2/health/ready
+curl -v localhost:8000/v2/models/densenet_onnx/versions/1/ready
+
+Server Metadata
+curl -v localhost:8000/v2 
+
+Model Metadata
+curl -v localhost:8000/v2/models/densenet_onnx/versions/1
+
+
+python ./client/src/python/examples/img_infer.py -m densenet_onnx -s INCEPTION -c 3 images/mug.jpg
+
+
+
+
+https://github.com/triton-inference-server/client/tree/main/src/python/examples
+
+https://developer.nvidia.com/blog/nvidia-serves-deep-learning-inference/
+
+https://cloudgurupayments.medium.com/deploying-an-object-detection-model-with-nvidia-triton-inference-server-38174796ba6c
+
+https://github.com/kserve/kserve/blob/master/docs/predict-api/v2/required_api.md#tensor-data
+
+https://www.run.ai/guides/machine-learning-engineering/triton-inference-server
+
+
+
+{'id': '1', 'model_name': 'resnet', 'model_version': '1', 'outputs': [{'name': 'OUTPUT__0', 'datatype': 'BYTES', 'shape': [1, 1], 'parameters': {'binary_data_size': 19}}]}
+
+
+docker commit <container_id> new_image_name:tag_name(optional)
+sudo docker compose up -d
+sudo docker compose down
+
+sudo docker run --name redis -d -p 6379:6379 redis
+
+milvus-standalone
+milvus-minio
+milvus-etcd
+
+FROM LOCAL TO VM
+scp -i ./VM_Access/nvidia-triton.pem ./v5.onnx ubuntu@ec2-44-202-218-33.compute-1.amazonaws.com:/home/ubuntu/object_detection/yolov5_onnx/1
+
+FROM VM TO LOCAL
+scp -i ./nvidia-triton.pem ubuntu@ec2-18-233-154-221.compute-1.amazonaws.com:/home/ubuntu/model_repository.zip ./
+
+
+http://ec2-52-202-128-17.compute-1.amazonaws.com:5000/search
